@@ -38,6 +38,8 @@ use WideWorldImporters;
 Нарастающий итог должен быть без оконной функции.
 */
 
+set statistics time, io on
+
 drop table if exists #summ_tmp;
 select    i.InvoiceID
          ,i.CustomerID
@@ -99,6 +101,11 @@ from      summMonth w
 join      Sales.Customers c on w.CustomerID = c.CustomerID
 order by  2
          ,3
+
+/*Вывод: с оконной функцией запрос отработал эффективнее.
+1. время ЦП с оконной функцией в 8 раз меньше, затраченное время - уменьшилось в 3,5 раза
+2. количество сканирований к таблицам InvoiceLines и Invoices так же уменьшилось практически в 10 раз
+*/
 
 /*
 3. Вывести список 2х самых популярных продуктов (по количеству проданных) 

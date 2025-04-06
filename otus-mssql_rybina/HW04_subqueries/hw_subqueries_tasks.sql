@@ -132,6 +132,41 @@ order by  TransactionAmount desc;
 который осуществлял упаковку заказов (PackedByPersonID).
 */
 
+--исправленный вариант
+select    distinct CityID
+                  ,CityName
+                  ,FullName
+--select *
+from      (select top 3 UnitPrice from Warehouse.StockItems order by UnitPrice desc) si
+join		Warehouse.StockItems ws on ws.UnitPrice = si.UnitPrice  --не уверена что OrderLines стоит соединять по UnitPrice, поэтому вызов таблицы еще раз
+join      sales.OrderLines ol on ws.StockItemID = ol.StockItemID
+join      Sales.Invoices i on ol.OrderID = i.OrderID
+join      sales.Customers ct on ct.CustomerID = i.CustomerID
+join      Application.People p on PackedByPersonID = p.PersonID
+join      Application.Cities c on c.CityID = ct.DeliveryCityID
+order by  1
+         ,3;
+
+--2 вариант
+with topStockItemID as (select  top 3 UnitPrice from Warehouse.StockItems order by UnitPrice desc)
+    ,cities as (select  distinct DeliveryCityID
+                                ,PackedByPersonID
+                from    topStockItemID t
+				join	Warehouse.StockItems ws on t.UnitPrice = ws.UnitPrice
+                join    sales.OrderLines ol on ws.StockItemID = ol.StockItemID
+                join    Sales.Invoices i on ol.OrderID = i.OrderID
+                join    sales.Customers ct on ct.CustomerID = i.CustomerID)
+select    CityID
+         ,CityName
+         ,FullName
+from      cities ct
+join      Application.People p on PackedByPersonID = p.PersonID
+join      Application.cities c on c.CityID = ct.DeliveryCityID
+order by  1
+         ,3;
+
+/*
+--исходный вариант
 select    distinct CityID
                   ,CityName
                   ,FullName
@@ -161,6 +196,7 @@ join      Application.People p on PackedByPersonID = p.PersonID
 join      Application.cities c on c.CityID = ct.DeliveryCityID
 order by  1
          ,3;
+*/
 
 -- ---------------------------------------------------------------------------
 -- Опциональное задание
